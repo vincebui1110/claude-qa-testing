@@ -1,0 +1,54 @@
+{
+  "apps": {
+    "ol": {
+      "name": "Order Limit",
+      "code": "ol",
+      "aliases": ["order limit", "order-limit"],
+      "repoPath": "order-limit",
+      "appHandle": "avada-order-limit-staging",
+      "appDomain": "avada-order-limit-staging.web.app",
+      "firebaseProject": "avada-order-limit"
+    },
+    "cb": {
+      "name": "Cookie Bar",
+      "code": "cb",
+      "aliases": ["cookie bar", "cookie-bar"],
+      "repoPath": "cookie-bar",
+      "appHandle": "avada-cookie-bar-staging",
+      "appDomain": "",
+      "firebaseProject": "avada-cookie-bar"
+    },
+    "ac": {
+      "name": "Accessibility",
+      "code": "ac",
+      "aliases": ["accessibility"],
+      "repoPath": "accessibility",
+      "appHandle": "ag-accessibility-staging-1",
+      "appDomain": "",
+      "firebaseProject": "avada-accessibility"
+    },
+    "av": {
+      "name": "Age Verification",
+      "code": "av",
+      "aliases": ["age verification", "age-verification"],
+      "repoPath": "age-verification",
+      "appHandle": "avada-verification-staging-1",
+      "appDomain": "",
+      "firebaseProject": "avada-age-verification"
+    },
+    "sff": {
+      "name": "SEA Fraud Filter",
+      "code": "sff",
+      "aliases": ["sea fraud filter", "fraud filter", "sea-fraud-filter"],
+      "repoPath": "sea-fraud-filter",
+      "appHandle": "",
+      "appDomain": "",
+      "firebaseProject": "avada-sea-fraud-filter"
+    }
+  },
+  "store": {
+    "domain": "claude-9967.myshopify.com",
+    "slug": "claude-9967",
+    "password": "1"
+  }
+}

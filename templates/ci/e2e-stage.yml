@@ -1,0 +1,48 @@
+# GitLab CI — E2E Test Stage
+# Include this in your app's .gitlab-ci.yml
+#
+# Add to stages: - test
+# Then include this file or copy the jobs below
+
+e2e-tests:
+  stage: test
+  image: mcr.microsoft.com/playwright:v1.50.0-noble
+  variables:
+    SHOP_DOMAIN: $E2E_SHOP_DOMAIN
+    SHOPIFY_APP_HANDLE: $E2E_APP_HANDLE
+    APP_DOMAIN: $E2E_APP_DOMAIN
+    STORE_PASSWORD: $E2E_STORE_PASSWORD
+    STOREFRONT_URL: "https://$E2E_SHOP_DOMAIN"
+  before_script:
+    - cd packages/e2e
+    - yarn install --cache-folder .yarn-cache
+    - npx playwright install chromium --with-deps
+    - |
+      cat > .env.test << EOF
+      SHOP_DOMAIN=$SHOP_DOMAIN
+      SHOPIFY_APP_HANDLE=$SHOPIFY_APP_HANDLE
+      APP_DOMAIN=$APP_DOMAIN
+      STORE_PASSWORD=$STORE_PASSWORD
+      STOREFRONT_URL=$STOREFRONT_URL
+      EOF
+    - mkdir -p .auth
+    - echo "$E2E_ADMIN_AUTH_JSON" > .auth/admin.json
+  script:
+    - npx playwright test --project=admin --reporter=list,json
+  artifacts:
+    when: always
+    paths:
+      - packages/e2e/reports/
+      - packages/e2e/test-results/
+    expire_in: 30 days
+  rules:
+    - if: $CI_COMMIT_BRANCH == "master"
+    - if: $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "master"
+  allow_failure: true
+  timeout: 15 minutes
+
+e2e-tests:manual:
+  extends: e2e-tests
+  rules:
+    - when: manual
+  allow_failure: true

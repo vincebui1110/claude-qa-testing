@@ -1,87 +1,96 @@
-# Claude QA Testing
+# Claude QA Testing — Unified E2E for Shopify Apps
 
-Automated Shopify app testing with Claude Code + Puppeteer CDP.
+Automated E2E testing for 5 Shopify embedded apps, combining Claude Code AI orchestration with Playwright + Puppeteer CDP.
 
 ## Architecture
 
 ```
-Claude Code (orchestrator)     Puppeteer CDP (runner)
-  /qa-test skill                 Chrome debug port 9222
-  → gen .spec.js from PRD        → connect existing session
-  → gen QA_TRACKER.html           → navigate admin/storefront
-  → gen run-ui-tests.cjs          → check elements in iframe
-  → run tests                     → auto-accept "Leave page?" dialogs
-  → update tracker                → report PASS/FAIL/PENDING
+claude-qa-testing (this repo)          Per-app packages/e2e/
+├── templates/e2e-scaffold/    ──→     ├── helpers/ (shared)
+├── templates/nav/             ──→     ├── helpers/nav.js (app-specific)
+├── templates/ci/              ──→     ├── .gitlab-ci.yml (test stage)
+├── templates/env/             ──→     ├── .env.test
+├── scripts/bootstrap-app.sh   ──→     └── Full E2E setup
+└── claude-code/               ──→     ~/.claude/ (skill/workflow/agent)
 ```
 
-## Setup
+### Testing Layers
 
-1. Copy `skills/`, `workflows/`, `agents/` vào `~/.claude/`
-2. Sửa `ENV.md` cho máy hiện tại
-3. `npm install -g puppeteer-core`
-4. Launch Chrome debug: `/Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome --remote-debugging-port=9222 --user-data-dir=$HOME/.chrome-debug-profile`
-5. Login Shopify Admin trong Chrome debug window
+| Layer | Directory | Auth | What |
+|-------|-----------|------|------|
+| **Admin** | tests/admin/ | admin.json + FrameLocator | Merchant UI trong iframe |
+| **Storefront** | tests/storefront/ | customer.json (optional) | Customer-facing pages |
+| **E2E Flows** | tests/e2e-flows/ | admin.json | Cross-boundary workflows |
 
-## Usage
+### Execution Modes
+
+| Mode | How | When |
+|------|-----|------|
+| **Claude Code** | `/qa-test SB-1234` | AI generates + runs tests from PRD |
+| **Manual** | `npx playwright test` | Developer runs directly |
+| **CI/CD** | GitLab pipeline | Auto on push to master |
+| **Puppeteer CDP** | Fallback | When Playwright auth fails |
+
+## Quick Start
+
+```bash
+# Bootstrap E2E for a new app
+./scripts/bootstrap-app.sh cb
+
+# Or sync shared files to existing app
+./scripts/sync-shared.sh
+```
+
+See [docs/SETUP.md](docs/SETUP.md) for full setup guide.
+
+## 5 Apps Supported
+
+| Code | App | Status |
+|------|-----|--------|
+| ol | Order Limit | ✅ Full setup + tests |
+| cb | Cookie Bar | 📋 Template ready |
+| ac | Accessibility | 📋 Template ready |
+| av | Age Verification | 📋 Template ready |
+| sff | SEA Fraud Filter | 📋 Template ready |
+
+## Repo Structure
 
 ```
-# Trong Claude Code
-> test SB-9922
-> QA SB-9922
-> chạy test tính năng Order Limit
+├── app-configs.json                   # Registry: 5 apps handles, domains
+├── templates/
+│   ├── e2e-scaffold/                  # Shared E2E files (copy to app)
+│   │   ├── playwright.config.js       # Multi-project config
+│   │   ├── helpers/                   # embedded.js, common.js, tracker.js
+│   │   ├── fixtures/                  # admin.setup.js, customer.setup.js
+│   │   ├── reporters/                 # tracker-reporter.js
+│   │   └── scripts/                   # validate/export/convert session
+│   ├── nav/                           # Per-app route helpers
+│   ├── ci/e2e-stage.yml               # GitLab CI template
+│   └── env/                           # Per-app .env templates
+├── claude-code/                       # Claude Code integration
+│   ├── skills/qa-test/                # /qa-test skill + tracker template
+│   ├── workflows/testing.md           # Testing workflow
+│   └── agents/qa-agent.md             # QA agent definition
+├── scripts/
+│   ├── bootstrap-app.sh               # Setup E2E for new app
+│   └── sync-shared.sh                 # Sync shared files to all apps
+├── docs/                              # SETUP, SESSION, CI-CD, PITFALLS
+└── examples/sb-9922/                  # Working example (OL migration)
 ```
 
 ## Key Technical Notes
 
-- **Playwright headless KHÔNG auth được Shopify Admin** (Google OAuth interactive) → dùng Puppeteer CDP
-- **Shopify embedded apps** chạy trong iframe → dùng `page.frames().find()` để interact
-- **"Leave page?" dialog** khi navigate giữa pages có unsaved form state → `page.on('dialog', d => d.accept())`
-- **`page.waitForTimeout()` deprecated** trong Puppeteer mới → dùng `sleep()` helper
-- **Store password**: auto-fill, không hỏi user
-- **Polaris v13**: một số components đổi từ Card → Box/BlockStack → cần update selectors
+- **Playwright headless can't auth Shopify** → Puppeteer CDP fallback (port 9222)
+- **"Leave page?" dialog** → `page.on('dialog', d => d.accept())`
+- **Save button outside iframe** → use `page` not `app` (FrameLocator)
+- **Session expires ~24h** → validate-session.js checks age
+- **Polaris v13** → check both `.Polaris-Card` and `.Polaris-Box`
 
-## Example: SB-9922
+See [docs/PITFALLS.md](docs/PITFALLS.md) for complete list.
 
-Full working example cho `[DEV][OL] Migrate to Firebase Functions v2`:
+## Documentation
 
-```
-examples/sb-9922/
-├── test-plan.md                        # Test plan + parallel split
-├── run-ui-tests.cjs                    # CDP runner script (37 UI tests)
-├── QA_TRACKER_SB-9922.html             # Live tracker with results
-├── results.json                        # Test results JSON
-├── playwright.config.js                # Playwright config (reference)
-├── helpers/                            # Shared helpers
-│   ├── embedded.js                     # iframe navigation
-│   ├── nav.js                          # app route helpers
-│   └── common.js                       # waitForToast, waitForPageLoad, etc.
-├── ui-01-dashboard.spec.js             # Dashboard tests (4 cases)
-├── ui-02-order-limits-list.spec.js     # List page tests (7 cases)
-├── ui-03-create-edit-rule.spec.js      # CRUD tests (10 cases)
-├── ui-04-branding-settings.spec.js     # Branding+Settings+Integrations+Sub (15 cases)
-├── ui-05-storefront.spec.js            # Storefront tests (4 cases)
-├── part-a-http-functions.spec.js       # Migration: HTTP functions (9 cases)
-├── part-b-regression.spec.js           # Migration: regression (7 cases)
-└── part-c-deployment-checklist.spec.js # Migration: manual checklist (21 cases)
-```
-
-### Results (2026-03-26)
-
-| Status | Count |
-|--------|-------|
-| PASS   | 24    |
-| FAIL   | 4 (selector issues, not app bugs) |
-| Pending| 12 (no test data on staging) |
-| Manual | 21 (Firebase console checks) |
-| **Total** | **58** |
-
-## File Structure
-
-```
-├── agents/qa-agent.md          # QA Agent definition
-├── skills/qa-test/SKILL.md     # /qa-test skill definition
-├── skills/qa-test/TRACKER_TEMPLATE.html
-├── workflows/testing.md        # Testing workflow
-├── ENV.md                      # Environment config
-└── examples/sb-9922/           # Working example
-```
+- [Setup Guide](docs/SETUP.md)
+- [Session Management](docs/SESSION-MANAGEMENT.md)
+- [CI/CD Integration](docs/CI-CD.md)
+- [Known Issues](docs/PITFALLS.md)

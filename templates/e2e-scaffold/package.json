@@ -1,0 +1,22 @@
+{
+  "name": "e2e-tests",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "npx playwright test",
+    "test:admin": "npx playwright test --project=admin",
+    "test:storefront": "npx playwright test --project=storefront",
+    "test:e2e": "npx playwright test --project=e2e-flows",
+    "test:smoke": "npx playwright test --grep @smoke",
+    "test:partA": "npx playwright test --grep @partA",
+    "test:partB": "npx playwright test --grep @partB",
+    "test:partC": "npx playwright test --grep @partC",
+    "report": "npx playwright show-report reports/html",
+    "validate-session": "node scripts/validate-session.js",
+    "export-session": "node scripts/export-session-from-browser.js"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.50.0",
+    "dotenv": "^16.4.0"
+  }
+}

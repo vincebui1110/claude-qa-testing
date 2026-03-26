@@ -1,0 +1,6 @@
+.auth/
+.env.test
+test-results/
+reports/
+node_modules/
+*.state.json
