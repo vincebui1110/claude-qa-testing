@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>QA Tracker — SB-9922 Migrate to Firebase Functions v2</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f8f9fa; color: #1a1a1a; padding: 20px; font-size: 13px; }
+
+  .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+  .header h1 { font-size: 20px; }
+  .header .meta { display: flex; gap: 8px; align-items: center; }
+  .header .ticket { font-size: 12px; color: #666; background: #e9ecef; padding: 4px 10px; border-radius: 4px; }
+  .header .save-btn { padding: 6px 14px; background: #4f46e5; color: #fff; border: none; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: 500; }
+  .header .save-btn:hover { background: #4338ca; }
+
+  .summary { display: flex; gap: 12px; margin-bottom: 20px; }
+  .summary .card { flex: 1; background: #fff; border-radius: 8px; padding: 14px; box-shadow: 0 1px 3px rgba(0,0,0,0.06); text-align: center; }
+  .summary .card .num { font-size: 28px; font-weight: 700; }
+  .summary .card .label { font-size: 11px; color: #888; margin-top: 2px; }
+  .card.c-total .num { color: #333; }
+  .card.c-done .num { color: #22c55e; }
+  .card.c-block .num { color: #ef4444; }
+  .card.c-pending .num { color: #f59e0b; }
+  .card.c-testing .num { color: #3b82f6; }
+  .card.c-todo .num { color: #94a3b8; }
+
+  .progress-bar { height: 6px; background: #e2e8f0; border-radius: 3px; margin-bottom: 20px; overflow: hidden; display: flex; }
+  .progress-bar .done { background: #22c55e; transition: width 0.3s; }
+  .progress-bar .block { background: #ef4444; transition: width 0.3s; }
+  .progress-bar .pending { background: #f59e0b; transition: width 0.3s; }
+  .progress-bar .testing { background: #3b82f6; transition: width 0.3s; }
+
+  .group { background: #fff; border-radius: 8px; margin-bottom: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.06); overflow: hidden; }
+  .group-header { padding: 10px 14px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; user-select: none; }
+  .group-header:hover { background: #fafafa; }
+  .group-header h3 { font-size: 13px; font-weight: 600; }
+  .group-header .badges { display: flex; gap: 4px; }
+  .group-header .badges span { font-size: 10px; padding: 2px 6px; border-radius: 8px; font-weight: 600; }
+  .b-done { background: #dcfce7; color: #166534; }
+  .b-block { background: #fee2e2; color: #991b1b; }
+  .b-pending { background: #fef3c7; color: #92400e; }
+  .b-testing { background: #dbeafe; color: #1e40af; }
+  .b-todo { background: #f1f5f9; color: #64748b; }
+
+  .group-body { display: none; }
+  .group.open .group-body { display: block; }
+  .group.open .group-header .arrow { transform: rotate(90deg); }
+  .arrow { transition: transform 0.15s; display: inline-block; margin-right: 6px; font-size: 10px; }
+
+  table { width: 100%; border-collapse: collapse; }
+  th { text-align: left; padding: 6px 10px; background: #f8f9fa; color: #888; font-weight: 500; font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px; position: sticky; top: 0; }
+  td { padding: 6px 10px; border-top: 1px solid #f0f0f0; vertical-align: middle; }
+  td:first-child { font-family: monospace; font-size: 11px; color: #999; width: 45px; }
+  .col-el { max-width: 280px; }
+  .col-exp { max-width: 200px; }
+  .col-status { width: 110px; }
+  .col-note { width: 200px; }
+
+  select.status-sel { padding: 3px 6px; border: 1px solid #ddd; border-radius: 4px; font-size: 11px; background: #fff; cursor: pointer; width: 100%; }
+  select.status-sel.s-todo { border-color: #cbd5e1; color: #64748b; }
+  select.status-sel.s-testing { border-color: #93c5fd; color: #1e40af; background: #eff6ff; }
+  select.status-sel.s-done { border-color: #86efac; color: #166534; background: #f0fdf4; }
+  select.status-sel.s-block { border-color: #fca5a5; color: #991b1b; background: #fef2f2; }
+  select.status-sel.s-pending { border-color: #fcd34d; color: #92400e; background: #fffbeb; }
+
+  input.note-input { padding: 3px 6px; border: 1px solid #e5e7eb; border-radius: 4px; font-size: 11px; width: 100%; color: #555; }
+  input.note-input:focus { outline: none; border-color: #93c5fd; }
+
+  code { background: #f1f5f9; padding: 1px 4px; border-radius: 3px; font-size: 11px; }
+  .timestamp { font-size: 11px; color: #aaa; text-align: right; margin-top: 12px; }
+  .tag { font-size: 9px; padding: 1px 5px; border-radius: 3px; font-weight: 600; margin-left: 4px; }
+  .tag-auto { background: #dbeafe; color: #1e40af; }
+  .tag-manual { background: #fef3c7; color: #92400e; }
+  .tag-semi { background: #e0e7ff; color: #3730a3; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>QA Tracker — Migrate to Firebase Functions v2</h1>
+  <div class="meta">
+    <span class="ticket">SB-9922 | Order Limit</span>
+    <button class="save-btn" onclick="QA.save()">Save Progress</button>
+  </div>
+</div>
+
+<div class="summary">
+  <div class="card c-total"><div class="num" id="s-total">0</div><div class="label">Total</div></div>
+  <div class="card c-done"><div class="num" id="s-done">0</div><div class="label">Done</div></div>
+  <div class="card c-testing"><div class="num" id="s-testing">0</div><div class="label">Testing</div></div>
+  <div class="card c-block"><div class="num" id="s-block">0</div><div class="label">Block</div></div>
+  <div class="card c-pending"><div class="num" id="s-pending">0</div><div class="label">Pending</div></div>
+  <div class="card c-todo"><div class="num" id="s-todo">0</div><div class="label">To Do</div></div>
+</div>
+
+<div class="progress-bar" id="progress-bar">
+  <div class="done"></div>
+  <div class="testing"></div>
+  <div class="pending"></div>
+  <div class="block"></div>
+</div>
+
+<div id="groups-container"></div>
+
+<div class="timestamp" id="last-updated">Last updated: —</div>
+
+<script>
+const TEST_DATA = [
+  // === MIGRATION-SPECIFIC TESTS ===
+  {
+    group: "TC-01",
+    title: "Deployment & Function List",
+    cases: [
+      {id: "TC-01.1", el: "firebase deploy --only functions", exp: "Deploy thành công, không lỗi", tag: "manual"},
+      {id: "TC-01.2", el: "firebase functions:list", exp: "18+ functions deployed", tag: "semi"},
+      {id: "TC-01.3", el: "Region config (embedApp, api, auth)", exp: "Multi-region: us-central1, us-east1, europe-west2, asia-northeast1", tag: "semi"},
+      {id: "TC-01.4", el: "Memory & timeout config", exp: "api: 2GB/540s, embedApp: 256MB, apiHook: 2GB/540s", tag: "semi"}
+    ]
+  },
+  {
+    group: "TC-03",
+    title: "Firestore Triggers (Manual — Check Logs)",
+    cases: [
+      {id: "TC-03.1", el: "onCreateUser — shops/{shopId} onCreate", exp: "Trigger fires khi shop mới install", tag: "manual"},
+      {id: "TC-03.2", el: "onUpdateShop — shops/{shopId} onUpdate", exp: "Trigger fires khi update shop data", tag: "manual"},
+      {id: "TC-03.3", el: "onWriteShop — shops/{shopId} onWrite", exp: "Trigger fires khi write shop document", tag: "manual"},
+      {id: "TC-03.4", el: "onWriteShopInfo — shopInfos/{id} onWrite", exp: "Trigger fires khi write shopInfo", tag: "manual"},
+      {id: "TC-03.5", el: "onWriteOrderLimits — orderLimits/{id} onWrite", exp: "Trigger fires khi tạo/sửa/xóa rule", tag: "manual"},
+      {id: "TC-03.6", el: "onWritePurchaseActivities", exp: "Trigger fires khi có purchase activity", tag: "manual"},
+      {id: "TC-03.7", el: "onWriteSubscription", exp: "Trigger fires khi thay đổi subscription", tag: "manual"},
+      {id: "TC-03.8", el: "onWriteSetting", exp: "Trigger fires khi thay đổi settings", tag: "manual"},
+      {id: "TC-03.9", el: "onWriteIntegration", exp: "Trigger fires khi thay đổi integration", tag: "manual"},
+      {id: "TC-03.10", el: "Trigger không fire duplicate", exp: "Mỗi write chỉ trigger 1 lần, không duplicate", tag: "manual"}
+    ]
+  },
+  {
+    group: "TC-04",
+    title: "Pub/Sub & Scheduler",
+    cases: [
+      {id: "TC-04.1", el: "backgroundSubscriber — TOPIC_BACKGROUND", exp: "Process background tasks thành công", tag: "manual"},
+      {id: "TC-04.2", el: "cronJobsScheduler — every 10 minutes", exp: "Scheduler chạy đúng lịch, logs mỗi 10 phút", tag: "manual"},
+      {id: "TC-04.3", el: "Scheduler timing config", exp: "Schedule: every 10 min, TZ: UTC, 256MB, 540s", tag: "semi"}
+    ]
+  },
+  {
+    group: "TC-06",
+    title: "Error Handling & Edge Cases",
+    cases: [
+      {id: "TC-06.1", el: "Cold start performance", exp: "Cold start <= 10s (v2 nhanh hơn v1)", tag: "manual"},
+      {id: "TC-06.2", el: "Timeout handling", exp: "Functions timeout đúng config (540s/300s)", tag: "manual"},
+      {id: "TC-06.3", el: "Invalid request handling", exp: "Trả về 400/404, không leak sensitive info", tag: "manual"},
+      {id: "TC-06.4", el: "Concurrent triggers", exp: "Nhiều trigger đồng thời xử lý đúng, không race condition", tag: "manual"}
+    ]
+  },
+  // === UI FUNCTIONAL TESTS ===
+  {
+    group: "UI-01",
+    title: "Dashboard / Home Page",
+    cases: [
+      {id: "UI-01.1", el: "Dashboard load — greeting + overview cards", exp: "Page render, có cards/sections hiển thị", tag: "auto"},
+      {id: "UI-01.2", el: "Recent order limits section", exp: "Có table/list recent limits hoặc empty state", tag: "auto"},
+      {id: "UI-01.3", el: "Navigation sidebar — menu items", exp: "Sidebar có >= 3 nav items (Home, Order Limits, Settings...)", tag: "auto"},
+      {id: "UI-01.4", el: "Click Order Limits nav — navigate đúng", exp: "Navigate tới Order Limits list page", tag: "auto"}
+    ]
+  },
+  {
+    group: "UI-02",
+    title: "Order Limits List Page",
+    cases: [
+      {id: "UI-02.1", el: "List page load — table/empty state", exp: "IndexTable hoặc EmptyState hiển thị", tag: "auto"},
+      {id: "UI-02.2", el: "Status tabs — All/Active/Inactive/Draft", exp: "Có >= 2 tabs hiển thị", tag: "auto"},
+      {id: "UI-02.3", el: "Tab switching — click Active tab", exp: "Filter đúng, page không crash", tag: "auto"},
+      {id: "UI-02.4", el: "Search — tìm kiếm theo tên", exp: "Search input hoạt động, page không crash", tag: "auto"},
+      {id: "UI-02.5", el: "Create button — navigate tới type selection", exp: "Click Create → type selection hoặc create form", tag: "auto"},
+      {id: "UI-02.6", el: "Bulk actions — checkbox select", exp: "Select row → bulk action bar xuất hiện", tag: "auto"},
+      {id: "UI-02.7", el: "Pagination — next/previous", exp: "Pagination buttons hoạt động (nếu có data)", tag: "auto"}
+    ]
+  },
+  {
+    group: "UI-03",
+    title: "Create & Edit Order Limit Rules",
+    cases: [
+      {id: "UI-03.1", el: "Type selection page — các loại limit", exp: "Hiển thị >= 3 type cards (Product, Collection, Order...)", tag: "auto"},
+      {id: "UI-03.2", el: "Click Product type → create form", exp: "Navigate tới create form thành công", tag: "auto"},
+      {id: "UI-03.3", el: "Create form — General tab fields", exp: "Name field và các input hiển thị", tag: "auto"},
+      {id: "UI-03.4", el: "Create form — tabs General + Message Settings", exp: "Có >= 2 tabs, click Message tab load content", tag: "auto"},
+      {id: "UI-03.5", el: "Validation — save without name", exp: "Hiển thị validation error hoặc toast lỗi", tag: "auto"},
+      {id: "UI-03.6", el: "Product selector — resource picker", exp: "Click Browse → modal picker hiển thị", tag: "auto"},
+      {id: "UI-03.7", el: "Min/max condition fields", exp: "Number inputs có, fill value thành công", tag: "auto"},
+      {id: "UI-03.8", el: "Advanced settings collapsible", exp: "Click expand → thêm fields (date, repurchase...)", tag: "auto"},
+      {id: "UI-03.9", el: "Edit existing rule — load data", exp: "Click row → edit form với data pre-filled", tag: "auto"},
+      {id: "UI-03.10", el: "Rule status badges (Active/Inactive/Draft)", exp: "Status badges hiển thị đúng trong list", tag: "auto"}
+    ]
+  },
+  {
+    group: "UI-04",
+    title: "Branding & Customization",
+    cases: [
+      {id: "UI-04.1", el: "Branding page load — theme presets", exp: "Cards hiển thị, có theme options", tag: "auto"},
+      {id: "UI-04.2", el: "Color pickers accessible", exp: "Có >= 1 color input", tag: "auto"},
+      {id: "UI-04.3", el: "Display type options (Inline/Popup)", exp: "Radio buttons hoặc select cho display type", tag: "auto"},
+      {id: "UI-04.4", el: "Preview section hiển thị", exp: "Có preview area cho branding", tag: "auto"},
+      {id: "UI-04.5", el: "Save changes button hoạt động", exp: "Save button accessible", tag: "auto"}
+    ]
+  },
+  {
+    group: "UI-05",
+    title: "Settings & Checkout Rules",
+    cases: [
+      {id: "UI-05.1", el: "Settings page load — app extensions", exp: "Cards hiển thị, có extension status", tag: "auto"},
+      {id: "UI-05.2", el: "Theme App Embed status badge", exp: "Badge On/Off hiển thị", tag: "auto"},
+      {id: "UI-05.3", el: "Checkout Rules page load", exp: "Toggle/button cho checkout validation", tag: "auto"},
+      {id: "UI-05.4", el: "Checkout validation behavior radio", exp: "Radio buttons Allow/Block (nếu có)", tag: "auto"}
+    ]
+  },
+  {
+    group: "UI-06",
+    title: "Integrations",
+    cases: [
+      {id: "UI-06.1", el: "Integrations page — Shopify Flow card", exp: "Card hiển thị, có status badge", tag: "auto"},
+      {id: "UI-06.2", el: "Shopify Flow status badge", exp: "Connected/Disconnected badge hoặc text", tag: "auto"}
+    ]
+  },
+  {
+    group: "UI-07",
+    title: "Subscription & Pricing",
+    cases: [
+      {id: "UI-07.1", el: "Subscription page load — plan cards", exp: "Page load, plan info hiển thị", tag: "auto"},
+      {id: "UI-07.2", el: "Monthly/Yearly toggle", exp: "Toggle buttons hoạt động, không crash", tag: "auto"},
+      {id: "UI-07.3", el: "Discount code input", exp: "Input field accessible (nếu có)", tag: "auto"},
+      {id: "UI-07.4", el: "Current plan info hiển thị", exp: "Có text Free/Basic/Grow/Advanced/Plus", tag: "auto"}
+    ]
+  },
+  {
+    group: "UI-08",
+    title: "Storefront",
+    cases: [
+      {id: "UI-08.1", el: "Storefront home page loads", exp: "Trang chủ load, không còn password page", tag: "auto"},
+      {id: "UI-08.2", el: "Product page — OL script injected", exp: "Product page load, check OL script/meta/div", tag: "auto"},
+      {id: "UI-08.3", el: "Add to cart button hoạt động", exp: "Button visible và clickable", tag: "auto"},
+      {id: "UI-08.4", el: "Cart page accessible", exp: "Cart page load, form/content hiển thị", tag: "auto"}
+    ]
+  }
+];
+
+// State — pre-loaded with test results from 2026-03-26
+const PRELOAD_STATE = {
+  "UI-01.1": {status: "done", note: "Page: true, 1 card(s)"},
+  "UI-01.2": {status: "done", note: "Table: true, EmptyState: false"},
+  "UI-01.3": {status: "block", note: "0 nav items — selector chưa match Polaris v13 nav"},
+  "UI-01.4": {status: "done", note: "Navigate tới Order Limits OK"},
+  "UI-02.1": {status: "done", note: "Table: true, Empty: false"},
+  "UI-02.2": {status: "pending", note: "0 tab(s) — có thể tabs render khác trong iframe"},
+  "UI-02.3": {status: "pending", note: "Skip — không có tabs để switch"},
+  "UI-02.4": {status: "pending", note: "Search input selector chưa match"},
+  "UI-02.5": {status: "done", note: "Type selection: 6 cards"},
+  "UI-02.6": {status: "pending", note: "Không có data rows trên staging"},
+  "UI-02.7": {status: "done", note: "Pagination không cần (ít data)"},
+  "UI-03.1": {status: "done", note: "6 type cards, Product text: true"},
+  "UI-03.2": {status: "done", note: "Navigate tới create form OK"},
+  "UI-03.3": {status: "done", note: "Name input: true"},
+  "UI-03.4": {status: "done", note: "4 tab(s) trên form (General, Message, ...)"},
+  "UI-03.5": {status: "done", note: "Save button accessible"},
+  "UI-03.6": {status: "pending", note: "Browse button selector chưa match"},
+  "UI-03.7": {status: "pending", note: "Number input selector chưa match"},
+  "UI-03.8": {status: "done", note: "Advanced settings mở sẵn / accessible"},
+  "UI-03.9": {status: "pending", note: "Không có rule để edit trên staging"},
+  "UI-03.10": {status: "pending", note: "Không có data trên staging"},
+  "UI-04.1": {status: "done", note: "Page: true, 4 card(s)"},
+  "UI-04.2": {status: "done", note: "3 input(s) tìm thấy"},
+  "UI-04.3": {status: "done", note: "Inline/Popup text: true"},
+  "UI-04.4": {status: "done", note: "Preview section hiển thị"},
+  "UI-04.5": {status: "done", note: "Save button accessible"},
+  "UI-05.1": {status: "block", note: "Page OK nhưng 0 Polaris Cards — có thể dùng component khác"},
+  "UI-05.2": {status: "done", note: "3 badge(s) hiển thị"},
+  "UI-05.3": {status: "done", note: "Checkout Rules page loaded"},
+  "UI-05.4": {status: "pending", note: "Không tìm thấy radio/toggle — cần check selector"},
+  "UI-06.1": {status: "block", note: "Page OK nhưng 0 Polaris Cards — có thể dùng Box/BlockStack"},
+  "UI-06.2": {status: "done", note: "1 badge, Shopify Flow text: true"},
+  "UI-07.1": {status: "done", note: "Subscription page loaded"},
+  "UI-07.2": {status: "pending", note: "Monthly/Yearly toggle không tìm thấy — có thể external component"},
+  "UI-07.3": {status: "pending", note: "0 text input(s)"},
+  "UI-07.4": {status: "pending", note: "Plan text không match — có thể render khác"},
+  "UI-08.1": {status: "done", note: "Storefront loaded OK"},
+  "UI-08.2": {status: "done", note: "Product page: true, OL script: true"},
+  "UI-08.3": {status: "done", note: "Add to cart button tìm thấy"},
+  "UI-08.4": {status: "block", note: "Cart form selector chưa match"}
+};
+let state = {};
+const STORAGE_KEY = 'qa-tracker-sb-9922';
+
+function init() {
+  try { state = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}'); } catch(e) { state = {}; }
+  // Merge preload state (only if not already set)
+  Object.keys(PRELOAD_STATE).forEach(id => {
+    if (!state[id] || state[id].status === 'todo') {
+      state[id] = PRELOAD_STATE[id];
+    }
+  });
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  render();
+}
+
+function render() {
+  const container = document.getElementById('groups-container');
+  container.innerHTML = '';
+
+  TEST_DATA.forEach((g, gi) => {
+    const isOpen = gi === 0;
+    const div = document.createElement('div');
+    div.className = 'group' + (isOpen ? ' open' : '');
+    div.id = g.group;
+
+    const caseRows = g.cases.map(c => {
+      const st = state[c.id]?.status || 'todo';
+      const note = state[c.id]?.note || '';
+      const tagClass = c.tag === 'auto' ? 'tag-auto' : c.tag === 'semi' ? 'tag-semi' : 'tag-manual';
+      const tagLabel = c.tag === 'auto' ? 'AUTO' : c.tag === 'semi' ? 'SEMI' : 'MANUAL';
+      return `<tr>
+        <td>${c.id} <span class="tag ${tagClass}">${tagLabel}</span></td>
+        <td class="col-el"><code>${escHtml(c.el)}</code></td>
+        <td class="col-exp">${escHtml(c.exp)}</td>
+        <td class="col-status">
+          <select class="status-sel s-${st}" data-id="${c.id}" onchange="QA.setStatus(this)">
+            <option value="todo" ${st==='todo'?'selected':''}>To Do</option>
+            <option value="testing" ${st==='testing'?'selected':''}>Testing</option>
+            <option value="done" ${st==='done'?'selected':''}>Done</option>
+            <option value="block" ${st==='block'?'selected':''}>Block</option>
+            <option value="pending" ${st==='pending'?'selected':''}>Pending</option>
+          </select>
+        </td>
+        <td class="col-note"><input class="note-input" data-id="${c.id}" value="${escHtml(note)}" placeholder="Note..." onchange="QA.setNote(this)"></td>
+      </tr>`;
+    }).join('');
+
+    const counts = countGroup(g.cases);
+
+    div.innerHTML = `
+      <div class="group-header" onclick="this.parentElement.classList.toggle('open')">
+        <h3><span class="arrow">&#9654;</span> ${g.group}: ${g.title}</h3>
+        <div class="badges">
+          ${counts.done ? `<span class="b-done">${counts.done} pass</span>` : ''}
+          ${counts.block ? `<span class="b-block">${counts.block} fail</span>` : ''}
+          ${counts.pending ? `<span class="b-pending">${counts.pending} pending</span>` : ''}
+          ${counts.testing ? `<span class="b-testing">${counts.testing} running</span>` : ''}
+          <span class="b-todo">${counts.done + counts.block + counts.pending + counts.testing}/${g.cases.length}</span>
+        </div>
+      </div>
+      <div class="group-body">
+        <table>
+          <tr><th>#</th><th>Element</th><th>Expected</th><th>Status</th><th>Note</th></tr>
+          ${caseRows}
+        </table>
+      </div>`;
+    container.appendChild(div);
+  });
+
+  refreshSummary();
+}
+
+function countGroup(cases) {
+  const r = {done:0, block:0, pending:0, testing:0, todo:0};
+  cases.forEach(c => { const s = state[c.id]?.status || 'todo'; r[s] = (r[s]||0) + 1; });
+  return r;
+}
+
+function refreshSummary() {
+  const allCases = TEST_DATA.flatMap(g => g.cases);
+  const total = allCases.length;
+  let done=0, block=0, pending=0, testing=0, todo=0;
+  allCases.forEach(c => {
+    const s = state[c.id]?.status || 'todo';
+    if (s==='done') done++; else if (s==='block') block++; else if (s==='pending') pending++; else if (s==='testing') testing++; else todo++;
+  });
+
+  document.getElementById('s-total').textContent = total;
+  document.getElementById('s-done').textContent = done;
+  document.getElementById('s-block').textContent = block;
+  document.getElementById('s-pending').textContent = pending;
+  document.getElementById('s-testing').textContent = testing;
+  document.getElementById('s-todo').textContent = todo;
+
+  const bar = document.getElementById('progress-bar');
+  bar.querySelector('.done').style.width = (done/total*100)+'%';
+  bar.querySelector('.testing').style.width = (testing/total*100)+'%';
+  bar.querySelector('.pending').style.width = (pending/total*100)+'%';
+  bar.querySelector('.block').style.width = (block/total*100)+'%';
+
+  document.getElementById('last-updated').textContent = 'Last updated: ' + new Date().toLocaleTimeString();
+}
+
+function escHtml(s) { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+// Public API — for Puppeteer evaluate() calls AND manual use
+window.QA = {
+  setStatus(el) {
+    const id = el.dataset.id;
+    const val = el.value;
+    if (!state[id]) state[id] = {};
+    state[id].status = val;
+    el.className = 'status-sel s-' + val;
+    this.save();
+    refreshSummary();
+    render();
+  },
+
+  setNote(el) {
+    const id = el.dataset.id;
+    if (!state[id]) state[id] = {};
+    state[id].note = el.value;
+    this.save();
+  },
+
+  // API for Puppeteer to call via page.evaluate()
+  update(id, status, note) {
+    if (!state[id]) state[id] = {};
+    state[id].status = status;
+    if (note !== undefined) state[id].note = note;
+    this.save();
+    render();
+    return true;
+  },
+
+  batchUpdate(updates) {
+    updates.forEach(u => {
+      if (!state[u.id]) state[u.id] = {};
+      state[u.id].status = u.status;
+      if (u.note !== undefined) state[u.id].note = u.note;
+    });
+    this.save();
+    render();
+  },
+
+  save() {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  },
+
+  exportState() { return JSON.stringify(state, null, 2); },
+  importState(json) { state = JSON.parse(json); this.save(); render(); },
+
+  // Summary for Puppeteer to read
+  getSummary() {
+    const allCases = TEST_DATA.flatMap(g => g.cases);
+    const total = allCases.length;
+    let done=0, block=0, pending=0, testing=0, todo=0;
+    allCases.forEach(c => {
+      const s = state[c.id]?.status || 'todo';
+      if (s==='done') done++; else if (s==='block') block++; else if (s==='pending') pending++; else if (s==='testing') testing++; else todo++;
+    });
+    return { total, done, block, pending, testing, todo };
+  },
+
+  // Get failed/blocked cases for report
+  getFailures() {
+    const allCases = TEST_DATA.flatMap(g => g.cases.map(c => ({...c, group: g.title})));
+    return allCases.filter(c => {
+      const s = state[c.id]?.status;
+      return s === 'block' || s === 'pending';
+    }).map(c => ({
+      id: c.id,
+      group: c.group,
+      el: c.el,
+      exp: c.exp,
+      status: state[c.id].status,
+      note: state[c.id].note || ''
+    }));
+  }
+};
+
+init();
+</script>
+</body>
+</html>

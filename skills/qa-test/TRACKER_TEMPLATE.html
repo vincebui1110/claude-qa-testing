@@ -7,44 +7,73 @@
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f8f9fa; color: #1a1a1a; padding: 20px; font-size: 13px; }
+
   .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
   .header h1 { font-size: 20px; }
   .header .meta { display: flex; gap: 8px; align-items: center; }
   .header .ticket { font-size: 12px; color: #666; background: #e9ecef; padding: 4px 10px; border-radius: 4px; }
-  .header .save-btn { padding: 6px 14px; background: #4f46e5; color: #fff; border: none; border-radius: 6px; cursor: pointer; font-size: 12px; }
+  .header .save-btn { padding: 6px 14px; background: #4f46e5; color: #fff; border: none; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: 500; }
+  .header .save-btn:hover { background: #4338ca; }
+
   .summary { display: flex; gap: 12px; margin-bottom: 20px; }
   .summary .card { flex: 1; background: #fff; border-radius: 8px; padding: 14px; box-shadow: 0 1px 3px rgba(0,0,0,0.06); text-align: center; }
   .summary .card .num { font-size: 28px; font-weight: 700; }
   .summary .card .label { font-size: 11px; color: #888; margin-top: 2px; }
-  .card.c-total .num{color:#333} .card.c-done .num{color:#22c55e} .card.c-block .num{color:#ef4444}
-  .card.c-pending .num{color:#f59e0b} .card.c-testing .num{color:#3b82f6} .card.c-todo .num{color:#94a3b8}
+  .card.c-total .num { color: #333; }
+  .card.c-done .num { color: #22c55e; }
+  .card.c-block .num { color: #ef4444; }
+  .card.c-pending .num { color: #f59e0b; }
+  .card.c-testing .num { color: #3b82f6; }
+  .card.c-todo .num { color: #94a3b8; }
+
   .progress-bar { height: 6px; background: #e2e8f0; border-radius: 3px; margin-bottom: 20px; overflow: hidden; display: flex; }
-  .progress-bar .done{background:#22c55e;transition:width .3s} .progress-bar .block{background:#ef4444;transition:width .3s}
-  .progress-bar .pending{background:#f59e0b;transition:width .3s} .progress-bar .testing{background:#3b82f6;transition:width .3s}
+  .progress-bar .done { background: #22c55e; transition: width 0.3s; }
+  .progress-bar .block { background: #ef4444; transition: width 0.3s; }
+  .progress-bar .pending { background: #f59e0b; transition: width 0.3s; }
+  .progress-bar .testing { background: #3b82f6; transition: width 0.3s; }
+
   .group { background: #fff; border-radius: 8px; margin-bottom: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.06); overflow: hidden; }
-  .group-header { padding: 10px 14px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
+  .group-header { padding: 10px 14px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; user-select: none; }
+  .group-header:hover { background: #fafafa; }
   .group-header h3 { font-size: 13px; font-weight: 600; }
   .group-header .badges { display: flex; gap: 4px; }
   .group-header .badges span { font-size: 10px; padding: 2px 6px; border-radius: 8px; font-weight: 600; }
-  .b-done{background:#dcfce7;color:#166534} .b-block{background:#fee2e2;color:#991b1b}
-  .b-pending{background:#fef3c7;color:#92400e} .b-testing{background:#dbeafe;color:#1e40af} .b-todo{background:#f1f5f9;color:#64748b}
-  .group-body { display: none; } .group.open .group-body { display: block; }
+  .b-done { background: #dcfce7; color: #166534; }
+  .b-block { background: #fee2e2; color: #991b1b; }
+  .b-pending { background: #fef3c7; color: #92400e; }
+  .b-testing { background: #dbeafe; color: #1e40af; }
+  .b-todo { background: #f1f5f9; color: #64748b; }
+
+  .group-body { display: none; }
+  .group.open .group-body { display: block; }
   .group.open .group-header .arrow { transform: rotate(90deg); }
   .arrow { transition: transform 0.15s; display: inline-block; margin-right: 6px; font-size: 10px; }
+
   table { width: 100%; border-collapse: collapse; }
-  th { text-align: left; padding: 6px 10px; background: #f8f9fa; color: #888; font-weight: 500; font-size: 10px; text-transform: uppercase; }
-  td { padding: 6px 10px; border-top: 1px solid #f0f0f0; }
+  th { text-align: left; padding: 6px 10px; background: #f8f9fa; color: #888; font-weight: 500; font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px; position: sticky; top: 0; }
+  td { padding: 6px 10px; border-top: 1px solid #f0f0f0; vertical-align: middle; }
   td:first-child { font-family: monospace; font-size: 11px; color: #999; width: 45px; }
-  select.status-sel { padding: 3px 6px; border: 1px solid #ddd; border-radius: 4px; font-size: 11px; width: 100%; }
-  select.status-sel.s-todo{border-color:#cbd5e1;color:#64748b} select.status-sel.s-testing{border-color:#93c5fd;color:#1e40af;background:#eff6ff}
-  select.status-sel.s-done{border-color:#86efac;color:#166534;background:#f0fdf4} select.status-sel.s-block{border-color:#fca5a5;color:#991b1b;background:#fef2f2}
-  select.status-sel.s-pending{border-color:#fcd34d;color:#92400e;background:#fffbeb}
-  input.note-input { padding: 3px 6px; border: 1px solid #e5e7eb; border-radius: 4px; font-size: 11px; width: 100%; }
+  .col-el { max-width: 280px; }
+  .col-exp { max-width: 200px; }
+  .col-status { width: 110px; }
+  .col-note { width: 200px; }
+
+  select.status-sel { padding: 3px 6px; border: 1px solid #ddd; border-radius: 4px; font-size: 11px; background: #fff; cursor: pointer; width: 100%; }
+  select.status-sel.s-todo { border-color: #cbd5e1; color: #64748b; }
+  select.status-sel.s-testing { border-color: #93c5fd; color: #1e40af; background: #eff6ff; }
+  select.status-sel.s-done { border-color: #86efac; color: #166534; background: #f0fdf4; }
+  select.status-sel.s-block { border-color: #fca5a5; color: #991b1b; background: #fef2f2; }
+  select.status-sel.s-pending { border-color: #fcd34d; color: #92400e; background: #fffbeb; }
+
+  input.note-input { padding: 3px 6px; border: 1px solid #e5e7eb; border-radius: 4px; font-size: 11px; width: 100%; color: #555; }
+  input.note-input:focus { outline: none; border-color: #93c5fd; }
+
   code { background: #f1f5f9; padding: 1px 4px; border-radius: 3px; font-size: 11px; }
   .timestamp { font-size: 11px; color: #aaa; text-align: right; margin-top: 12px; }
 </style>
 </head>
 <body>
+
 <div class="header">
   <h1>QA Tracker — {{TITLE}}</h1>
   <div class="meta">
@@ -52,6 +81,7 @@
     <button class="save-btn" onclick="QA.save()">Save Progress</button>
   </div>
 </div>
+
 <div class="summary">
   <div class="card c-total"><div class="num" id="s-total">0</div><div class="label">Total</div></div>
   <div class="card c-done"><div class="num" id="s-done">0</div><div class="label">Done</div></div>
@@ -60,61 +90,194 @@
   <div class="card c-pending"><div class="num" id="s-pending">0</div><div class="label">Pending</div></div>
   <div class="card c-todo"><div class="num" id="s-todo">0</div><div class="label">To Do</div></div>
 </div>
-<div class="progress-bar" id="progress-bar"><div class="done"></div><div class="testing"></div><div class="pending"></div><div class="block"></div></div>
+
+<div class="progress-bar" id="progress-bar">
+  <div class="done"></div>
+  <div class="testing"></div>
+  <div class="pending"></div>
+  <div class="block"></div>
+</div>
+
 <div id="groups-container"></div>
+
 <div class="timestamp" id="last-updated">Last updated: —</div>
+
 <script>
 const TEST_DATA = {{TEST_DATA}};
+
+// State
 let state = {};
 const STORAGE_KEY = '{{STORAGE_KEY}}';
-function init() { try { state = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}'); } catch(e) { state = {}; } render(); }
+
+function init() {
+  try { state = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}'); } catch(e) { state = {}; }
+  render();
+}
+
 function render() {
-  const container = document.getElementById('groups-container'); container.innerHTML = '';
+  const container = document.getElementById('groups-container');
+  container.innerHTML = '';
+
   TEST_DATA.forEach((g, gi) => {
-    const div = document.createElement('div'); div.className = 'group' + (gi === 0 ? ' open' : ''); div.id = g.group;
-    const rows = g.cases.map(c => { const st = state[c.id]?.status || 'todo'; const note = state[c.id]?.note || '';
-      return `<tr><td>${c.id}</td><td><code>${esc(c.el)}</code></td><td>${esc(c.exp)}</td>
-        <td><select class="status-sel s-${st}" data-id="${c.id}" onchange="QA.setStatus(this)">
-          <option value="todo" ${st==='todo'?'selected':''}>To Do</option><option value="testing" ${st==='testing'?'selected':''}>Testing</option>
-          <option value="done" ${st==='done'?'selected':''}>Done</option><option value="block" ${st==='block'?'selected':''}>Block</option>
-          <option value="pending" ${st==='pending'?'selected':''}>Pending</option></select></td>
-        <td><input class="note-input" data-id="${c.id}" value="${esc(note)}" placeholder="Note..." onchange="QA.setNote(this)"></td></tr>`;
+    const isOpen = gi === 0;
+    const div = document.createElement('div');
+    div.className = 'group' + (isOpen ? ' open' : '');
+    div.id = g.group;
+
+    const caseRows = g.cases.map(c => {
+      const st = state[c.id]?.status || 'todo';
+      const note = state[c.id]?.note || '';
+      return `<tr>
+        <td>${c.id}</td>
+        <td class="col-el"><code>${escHtml(c.el)}</code></td>
+        <td class="col-exp">${escHtml(c.exp)}</td>
+        <td class="col-status">
+          <select class="status-sel s-${st}" data-id="${c.id}" onchange="QA.setStatus(this)">
+            <option value="todo" ${st==='todo'?'selected':''}>To Do</option>
+            <option value="testing" ${st==='testing'?'selected':''}>Testing</option>
+            <option value="done" ${st==='done'?'selected':''}>Done</option>
+            <option value="block" ${st==='block'?'selected':''}>Block</option>
+            <option value="pending" ${st==='pending'?'selected':''}>Pending</option>
+          </select>
+        </td>
+        <td class="col-note"><input class="note-input" data-id="${c.id}" value="${escHtml(note)}" placeholder="Note..." onchange="QA.setNote(this)"></td>
+      </tr>`;
     }).join('');
-    const cn = countGroup(g.cases);
-    div.innerHTML = `<div class="group-header" onclick="this.parentElement.classList.toggle('open')">
-      <h3><span class="arrow">&#9654;</span> ${g.group}: ${g.title}</h3>
-      <div class="badges">${cn.done?`<span class="b-done">${cn.done} pass</span>`:''}${cn.block?`<span class="b-block">${cn.block} fail</span>`:''}
-        ${cn.pending?`<span class="b-pending">${cn.pending} pending</span>`:''}${cn.testing?`<span class="b-testing">${cn.testing} running</span>`:''}
-        <span class="b-todo">${cn.done+cn.block+cn.pending+cn.testing}/${g.cases.length}</span></div></div>
-      <div class="group-body"><table><tr><th>#</th><th>Element</th><th>Expected</th><th>Status</th><th>Note</th></tr>${rows}</table></div>`;
+
+    const counts = countGroup(g.cases);
+
+    div.innerHTML = `
+      <div class="group-header" onclick="this.parentElement.classList.toggle('open')">
+        <h3><span class="arrow">&#9654;</span> ${g.group}: ${g.title}</h3>
+        <div class="badges">
+          ${counts.done ? `<span class="b-done">${counts.done} pass</span>` : ''}
+          ${counts.block ? `<span class="b-block">${counts.block} fail</span>` : ''}
+          ${counts.pending ? `<span class="b-pending">${counts.pending} pending</span>` : ''}
+          ${counts.testing ? `<span class="b-testing">${counts.testing} running</span>` : ''}
+          <span class="b-todo">${counts.done + counts.block + counts.pending + counts.testing}/${g.cases.length}</span>
+        </div>
+      </div>
+      <div class="group-body">
+        <table>
+          <tr><th>#</th><th>Element</th><th>Expected</th><th>Status</th><th>Note</th></tr>
+          ${caseRows}
+        </table>
+      </div>`;
     container.appendChild(div);
-  }); refreshSummary();
+  });
+
+  refreshSummary();
 }
-function countGroup(cases) { const r={done:0,block:0,pending:0,testing:0,todo:0}; cases.forEach(c=>{const s=state[c.id]?.status||'todo';r[s]=(r[s]||0)+1;}); return r; }
+
+function countGroup(cases) {
+  const r = {done:0, block:0, pending:0, testing:0, todo:0};
+  cases.forEach(c => { const s = state[c.id]?.status || 'todo'; r[s] = (r[s]||0) + 1; });
+  return r;
+}
+
 function refreshSummary() {
-  const all=TEST_DATA.flatMap(g=>g.cases),total=all.length; let done=0,block=0,pending=0,testing=0,todo=0;
-  all.forEach(c=>{const s=state[c.id]?.status||'todo';if(s==='done')done++;else if(s==='block')block++;else if(s==='pending')pending++;else if(s==='testing')testing++;else todo++;});
-  ['total','done','block','pending','testing','todo'].forEach(k=>document.getElementById('s-'+k).textContent=eval(k));
-  const bar=document.getElementById('progress-bar');
-  bar.querySelector('.done').style.width=(done/total*100)+'%'; bar.querySelector('.testing').style.width=(testing/total*100)+'%';
-  bar.querySelector('.pending').style.width=(pending/total*100)+'%'; bar.querySelector('.block').style.width=(block/total*100)+'%';
-  document.getElementById('last-updated').textContent='Last updated: '+new Date().toLocaleTimeString();
+  const allCases = TEST_DATA.flatMap(g => g.cases);
+  const total = allCases.length;
+  let done=0, block=0, pending=0, testing=0, todo=0;
+  allCases.forEach(c => {
+    const s = state[c.id]?.status || 'todo';
+    if (s==='done') done++; else if (s==='block') block++; else if (s==='pending') pending++; else if (s==='testing') testing++; else todo++;
+  });
+
+  document.getElementById('s-total').textContent = total;
+  document.getElementById('s-done').textContent = done;
+  document.getElementById('s-block').textContent = block;
+  document.getElementById('s-pending').textContent = pending;
+  document.getElementById('s-testing').textContent = testing;
+  document.getElementById('s-todo').textContent = todo;
+
+  const bar = document.getElementById('progress-bar');
+  bar.querySelector('.done').style.width = (done/total*100)+'%';
+  bar.querySelector('.testing').style.width = (testing/total*100)+'%';
+  bar.querySelector('.pending').style.width = (pending/total*100)+'%';
+  bar.querySelector('.block').style.width = (block/total*100)+'%';
+
+  document.getElementById('last-updated').textContent = 'Last updated: ' + new Date().toLocaleTimeString();
 }
-function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+
+function escHtml(s) { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+// Public API — for Puppeteer evaluate() calls AND manual use
 window.QA = {
-  setStatus(el){const id=el.dataset.id,val=el.value;if(!state[id])state[id]={};state[id].status=val;el.className='status-sel s-'+val;this.save();render();},
-  setNote(el){const id=el.dataset.id;if(!state[id])state[id]={};state[id].note=el.value;this.save();},
-  update(id,status,note){if(!state[id])state[id]={};state[id].status=status;if(note!==undefined)state[id].note=note;this.save();render();return true;},
-  batchUpdate(updates){updates.forEach(u=>{if(!state[u.id])state[u.id]={};state[u.id].status=u.status;if(u.note!==undefined)state[u.id].note=u.note;});this.save();render();},
-  save(){localStorage.setItem(STORAGE_KEY,JSON.stringify(state));},
-  exportState(){return JSON.stringify(state,null,2);},
-  importState(json){state=JSON.parse(json);this.save();render();},
-  getSummary(){const all=TEST_DATA.flatMap(g=>g.cases),total=all.length;let d=0,b=0,p=0,t=0,td=0;
-    all.forEach(c=>{const s=state[c.id]?.status||'todo';if(s==='done')d++;else if(s==='block')b++;else if(s==='pending')p++;else if(s==='testing')t++;else td++;});
-    return{total,done:d,block:b,pending:p,testing:t,todo:td};},
-  getFailures(){return TEST_DATA.flatMap(g=>g.cases.map(c=>({...c,group:g.title}))).filter(c=>{const s=state[c.id]?.status;return s==='block'||s==='pending';})
-    .map(c=>({id:c.id,group:c.group,el:c.el,exp:c.exp,status:state[c.id].status,note:state[c.id].note||''}));}
+  setStatus(el) {
+    const id = el.dataset.id;
+    const val = el.value;
+    if (!state[id]) state[id] = {};
+    state[id].status = val;
+    el.className = 'status-sel s-' + val;
+    this.save();
+    refreshSummary();
+    render();
+  },
+
+  setNote(el) {
+    const id = el.dataset.id;
+    if (!state[id]) state[id] = {};
+    state[id].note = el.value;
+    this.save();
+  },
+
+  // API for Puppeteer to call via page.evaluate()
+  update(id, status, note) {
+    if (!state[id]) state[id] = {};
+    state[id].status = status;
+    if (note !== undefined) state[id].note = note;
+    this.save();
+    render();
+    return true;
+  },
+
+  batchUpdate(updates) {
+    updates.forEach(u => {
+      if (!state[u.id]) state[u.id] = {};
+      state[u.id].status = u.status;
+      if (u.note !== undefined) state[u.id].note = u.note;
+    });
+    this.save();
+    render();
+  },
+
+  save() {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  },
+
+  exportState() { return JSON.stringify(state, null, 2); },
+  importState(json) { state = JSON.parse(json); this.save(); render(); },
+
+  // Summary for Puppeteer to read
+  getSummary() {
+    const allCases = TEST_DATA.flatMap(g => g.cases);
+    const total = allCases.length;
+    let done=0, block=0, pending=0, testing=0, todo=0;
+    allCases.forEach(c => {
+      const s = state[c.id]?.status || 'todo';
+      if (s==='done') done++; else if (s==='block') block++; else if (s==='pending') pending++; else if (s==='testing') testing++; else todo++;
+    });
+    return { total, done, block, pending, testing, todo };
+  },
+
+  // Get failed/blocked cases for report
+  getFailures() {
+    const allCases = TEST_DATA.flatMap(g => g.cases.map(c => ({...c, group: g.title})));
+    return allCases.filter(c => {
+      const s = state[c.id]?.status;
+      return s === 'block' || s === 'pending';
+    }).map(c => ({
+      id: c.id,
+      group: c.group,
+      el: c.el,
+      exp: c.exp,
+      status: state[c.id].status,
+      note: state[c.id].note || ''
+    }));
+  }
 };
+
 init();
 </script>
 </body>

@@ -1,0 +1,211 @@
+{
+  "date": "2026-03-26T04:32:56.546Z",
+  "results": [
+    {
+      "id": "UI-01.1",
+      "status": "done",
+      "note": "Page: true, 1 card(s)"
+    },
+    {
+      "id": "UI-01.2",
+      "status": "done",
+      "note": "Table: true, EmptyState: false"
+    },
+    {
+      "id": "UI-01.3",
+      "status": "block",
+      "note": "0 nav items"
+    },
+    {
+      "id": "UI-01.4",
+      "status": "done",
+      "note": "Navigate tới Order Limits OK"
+    },
+    {
+      "id": "UI-02.1",
+      "status": "done",
+      "note": "Table: true, Empty: false"
+    },
+    {
+      "id": "UI-02.2",
+      "status": "pending",
+      "note": "0 tab(s) — cần >= 2"
+    },
+    {
+      "id": "UI-02.3",
+      "status": "pending",
+      "note": "Chỉ 0 tab(s), skip"
+    },
+    {
+      "id": "UI-02.4",
+      "status": "pending",
+      "note": "Không tìm thấy search input"
+    },
+    {
+      "id": "UI-02.5",
+      "status": "done",
+      "note": "Type selection: 6 cards"
+    },
+    {
+      "id": "UI-02.6",
+      "status": "pending",
+      "note": "Không có rows để select"
+    },
+    {
+      "id": "UI-02.7",
+      "status": "done",
+      "note": "Không cần pagination (ít data)"
+    },
+    {
+      "id": "UI-03.1",
+      "status": "done",
+      "note": "6 type cards, Product text: true"
+    },
+    {
+      "id": "UI-03.2",
+      "status": "done",
+      "note": "Navigate tới create form"
+    },
+    {
+      "id": "UI-03.3",
+      "status": "done",
+      "note": "Name input: true"
+    },
+    {
+      "id": "UI-03.4",
+      "status": "done",
+      "note": "4 tab(s) trên form"
+    },
+    {
+      "id": "UI-03.5",
+      "status": "done",
+      "note": "Save button accessible (không click để tránh tạo data)"
+    },
+    {
+      "id": "UI-03.6",
+      "status": "pending",
+      "note": "Không thấy browse button (có thể auto-select)"
+    },
+    {
+      "id": "UI-03.7",
+      "status": "pending",
+      "note": "0 number input(s)"
+    },
+    {
+      "id": "UI-03.8",
+      "status": "done",
+      "note": "Advanced settings có thể mở sẵn"
+    },
+    {
+      "id": "UI-03.9",
+      "status": "pending",
+      "note": "Không có rule để edit"
+    },
+    {
+      "id": "UI-03.10",
+      "status": "pending",
+      "note": "0 badge(s) trong list"
+    },
+    {
+      "id": "UI-04.1",
+      "status": "done",
+      "note": "Page: true, 4 card(s) — /branding route"
+    },
+    {
+      "id": "UI-04.2",
+      "status": "done",
+      "note": "3 input(s)"
+    },
+    {
+      "id": "UI-04.3",
+      "status": "done",
+      "note": "Radios: 0, Inline/Popup text: true"
+    },
+    {
+      "id": "UI-04.4",
+      "status": "done",
+      "note": "Preview section hiển thị"
+    },
+    {
+      "id": "UI-04.5",
+      "status": "done",
+      "note": "Save button accessible"
+    },
+    {
+      "id": "UI-05.1",
+      "status": "block",
+      "note": "Page: true, 0 card(s)"
+    },
+    {
+      "id": "UI-05.2",
+      "status": "done",
+      "note": "3 badge(s)"
+    },
+    {
+      "id": "UI-05.3",
+      "status": "done",
+      "note": "Checkout Rules page loaded"
+    },
+    {
+      "id": "UI-05.4",
+      "status": "pending",
+      "note": "Radios: 0, Toggles: 0"
+    },
+    {
+      "id": "UI-06.1",
+      "status": "block",
+      "note": "Page: true, 0 card(s)"
+    },
+    {
+      "id": "UI-06.2",
+      "status": "done",
+      "note": "Badges: 1, Shopify Flow text: true"
+    },
+    {
+      "id": "UI-07.1",
+      "status": "done",
+      "note": "Subscription page loaded"
+    },
+    {
+      "id": "UI-07.2",
+      "status": "pending",
+      "note": "Monthly: false, Yearly: false"
+    },
+    {
+      "id": "UI-07.3",
+      "status": "pending",
+      "note": "0 text input(s)"
+    },
+    {
+      "id": "UI-07.4",
+      "status": "pending",
+      "note": "Plan text: false"
+    },
+    {
+      "id": "UI-08.1",
+      "status": "done",
+      "note": "URL: https://claude-9967.myshopify.com/"
+    },
+    {
+      "id": "UI-08.2",
+      "status": "done",
+      "note": "Product page: true, OL script: true"
+    },
+    {
+      "id": "UI-08.3",
+      "status": "done",
+      "note": "Add to cart button tìm thấy"
+    },
+    {
+      "id": "UI-08.4",
+      "status": "block",
+      "note": "Cart page: false"
+    }
+  ],
+  "summary": {
+    "done": 24,
+    "block": 4,
+    "pending": 12,
+    "total": 40
+  }
+}

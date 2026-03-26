@@ -38,4 +38,3 @@ Khi chuyển máy mới, chỉ cần sửa file này.
 - macOS ARM (Apple Silicon): `NODE_PATH=/opt/homebrew/lib/node_modules`
 - macOS Intel: `NODE_PATH=/usr/local/lib/node_modules`
 - Linux: `NODE_PATH=/usr/lib/node_modules` hoặc check `npm root -g`
-- Windows: `CHROME_PATH=C:\Program Files\Google\Chrome\Application\chrome.exe`, `NODE_PATH` từ `npm root -g`
