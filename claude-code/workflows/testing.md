@@ -93,8 +93,10 @@ Phase 3: Merge results → QA Report
 **Chạy trước khi spawn 3 agents**
 
 1. **Check E2E folder**: `packages/e2e/` exists, `playwright.config.js` present
+   - Nếu chưa có: thông báo chạy `bootstrap-app.sh <app-code>` từ claude-qa-testing repo
 2. **Check Playwright installed**: `npx playwright --version`
-3. **Check auth session**: `.auth/admin.json` exists và < 24h tuổi
+3. **Validate session**: `node packages/e2e/scripts/validate-session.js`
+   - Script tự check: file tồn tại, age < 24h, cookies không trống
 4. **Check .spec.js files**: Phase 1 output đã có trong `tests/`
 5. **Mở tracker cho user**: `open ${DESKTOP}/QA_TRACKER_{TICKET}.html`
 
@@ -102,6 +104,9 @@ Phase 3: Merge results → QA Report
 ```
 Thông báo user: "Auth session hết hạn. Chạy lệnh sau rồi retry:
 cd packages/e2e && node scripts/export-session-from-browser.js"
+
+Hoặc dùng CDP (nếu Chrome debug đang chạy):
+cd packages/e2e && node scripts/export-session-from-browser.js --cdp
 ```
 
 **Output cho parent**: Confirm ready hoặc blockers list

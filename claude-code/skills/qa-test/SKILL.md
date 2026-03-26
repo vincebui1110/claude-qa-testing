@@ -35,17 +35,26 @@ Playwright (core)              Claude Code (orchestration)
 - **Tracker Template**: `${CLAUDE_DIR}/skills/qa-test/TRACKER_TEMPLATE.html`
 - **Output Dir**: `${DESKTOP}`
 - **Credentials**: `${SECRETS_FILE}` (KHÔNG đọc/hiển thị)
-- **E2E Setup Guide** (chỉ khi setup lần đầu): `~/Downloads/AI-AGENT-GUIDE.md`
+- **E2E Setup Guide**: `github.com/vincebui1110/claude-qa-testing` (templates, scripts, docs)
+- **Bootstrap script**: `claude-qa-testing/scripts/bootstrap-app.sh` (setup packages/e2e/ cho app mới)
 
 ### App Codebase Mapping
 
-| App (aliases) | Code Path | E2E Path | App Domain (iframe) |
-|---------------|-----------|----------|---------------------|
-| order limit, ol | `${SHOPIFY_APP_DIR}/order-limit/` | `packages/e2e/` | — |
-| cookie bar, cb | `${SHOPIFY_APP_DIR}/cookie-bar/` | `packages/e2e/` | — |
-| accessibility, ac | `${SHOPIFY_APP_DIR}/accessibility/` | `packages/e2e/` | — |
-| age verification, av | `${SHOPIFY_APP_DIR}/age-verification/` | `packages/e2e/` | — |
-| sea fraud filter, sff | `${SHOPIFY_APP_DIR}/sea-fraud-filter/` | `packages/e2e/` | — |
+| App (aliases) | Code Path | E2E Path | App Handle (staging) | App Domain (iframe) |
+|---------------|-----------|----------|---------------------|---------------------|
+| order limit, ol | `${SHOPIFY_APP_DIR}/order-limit/` | `packages/e2e/` | avada-order-limit-staging | avada-order-limit-staging.web.app |
+| cookie bar, cb | `${SHOPIFY_APP_DIR}/cookie-bar/` | `packages/e2e/` | avada-cookie-bar-staging | avada-cookie-bar-staging.web.app |
+| accessibility, ac | `${SHOPIFY_APP_DIR}/accessibility/` | `packages/e2e/` | ag-accessibility-staging-1 | ag-accessibility-staging-1.firebaseapp.com |
+| age verification, av | `${SHOPIFY_APP_DIR}/age-verification/` | `packages/e2e/` | avada-verification-staging-1 | age-verification-staging-1.web.app |
+| sea fraud filter, sff | `${SHOPIFY_APP_DIR}/sea-fraud-filter/` | `packages/e2e/` | — | — |
+
+### E2E Infrastructure Reference
+
+- **Templates repo**: `github.com/vincebui1110/claude-qa-testing`
+- **Bootstrap new app**: `./scripts/bootstrap-app.sh <app-code>`
+- **Sync shared helpers**: `./scripts/sync-shared.sh`
+- **Validate session**: `node packages/e2e/scripts/validate-session.js`
+- **Multi-layer tests**: `tests/admin/`, `tests/storefront/`, `tests/e2e-flows/`
 
 ### Feature Document Paths
 

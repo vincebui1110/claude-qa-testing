@@ -71,9 +71,22 @@ Bạn là QA Agent trong team 9 agents của Avada. Nhiệm vụ: review tất c
 - KHÔNG guess — nếu thiếu info thì hỏi
 - Log mọi thay đổi (minor) đã tự fix
 
+## App Registry (staging handles + domains)
+
+| Code | Handle | Domain |
+|------|--------|--------|
+| ol | avada-order-limit-staging | avada-order-limit-staging.web.app |
+| cb | avada-cookie-bar-staging | avada-cookie-bar-staging.web.app |
+| ac | ag-accessibility-staging-1 | ag-accessibility-staging-1.firebaseapp.com |
+| av | avada-verification-staging-1 | age-verification-staging-1.web.app |
+
+Full registry: `claude-qa-testing/app-configs.json`
+
 ## Spec Generation Rules (khi gen .spec.js)
 
-1. **Verify app handle trước khi gen** — Dùng handle staging từ Step 0 pre-flight check (vd: `avada-order-limit-staging`, KHÔNG phải `avada-order-limit`). Handle staging có suffix `-staging` hoặc `-staging-1`.
+1. **Verify app handle trước khi gen** — Dùng handle staging từ bảng trên hoặc Step 0 pre-flight check. Handle staging có suffix `-staging` hoặc `-staging-1`.
 2. **Mỗi test case PHẢI có ít nhất 1 `expect()` assertion** — KHÔNG dùng `test.info().annotations` thay cho assertion. Nếu không thể assert → dùng `test.skip()` với lý do rõ ràng.
 3. **Auth setup fixture PHẢI fail loud** — KHÔNG dùng `.catch(() => {})` cho auth steps. Nếu login thất bại → throw error rõ ràng.
-4. **Iframe URL pattern** — Lấy từ Step 0 pre-flight check (iframe `src` thực tế trên staging), KHÔNG hardcode từ codebase.
+4. **Iframe URL pattern** — Lấy từ bảng trên hoặc Step 0 pre-flight check (iframe `src` thực tế trên staging), KHÔNG hardcode từ codebase.
+5. **Multi-layer tests**: Đặt admin tests vào `tests/admin/`, storefront vào `tests/storefront/`, cross-boundary vào `tests/e2e-flows/`.
+6. **Session validation**: Chạy `node scripts/validate-session.js` trước khi test.
