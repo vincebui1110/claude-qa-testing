@@ -15,7 +15,7 @@
       "aliases": ["cookie bar", "cookie-bar"],
       "repoPath": "cookie-bar",
       "appHandle": "avada-cookie-bar-staging",
-      "appDomain": "",
+      "appDomain": "avada-cookie-bar-staging.web.app",
       "firebaseProject": "avada-cookie-bar"
     },
     "ac": {
@@ -24,7 +24,7 @@
       "aliases": ["accessibility"],
       "repoPath": "accessibility",
       "appHandle": "ag-accessibility-staging-1",
-      "appDomain": "",
+      "appDomain": "ag-accessibility-staging-1.firebaseapp.com",
       "firebaseProject": "avada-accessibility"
     },
     "av": {
@@ -33,7 +33,7 @@
       "aliases": ["age verification", "age-verification"],
       "repoPath": "age-verification",
       "appHandle": "avada-verification-staging-1",
-      "appDomain": "",
+      "appDomain": "age-verification-staging-1.web.app",
       "firebaseProject": "avada-age-verification"
     },
     "sff": {
