@@ -100,13 +100,36 @@ Phase 3: Merge results → QA Report
 4. **Check .spec.js files**: Phase 1 output đã có trong `tests/`
 5. **Mở tracker cho user**: `open ${DESKTOP}/QA_TRACKER_{TICKET}.html`
 
-**Nếu auth expired hoặc chưa có:**
-```
-Thông báo user: "Auth session hết hạn. Chạy lệnh sau rồi retry:
-cd packages/e2e && node scripts/export-session-from-browser.js"
+**Nếu auth expired hoặc chưa có — TỰ ĐỘNG refresh (không hỏi user):**
+```bash
+# 1. Launch Chrome với Avada Claude profile nếu chưa chạy
+curl -s http://localhost:9222/json > /dev/null 2>&1 || \
+  /Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome \
+    --remote-debugging-port=9222 \
+    --user-data-dir=/Users/avada/.chrome-debug-profile \
+    --window-size=1440,900 &disown
+sleep 3
 
-Hoặc dùng CDP (nếu Chrome debug đang chạy):
-cd packages/e2e && node scripts/export-session-from-browser.js --cdp
+# 2. Export session qua CDP (không cần user interaction)
+cd ${APP_PATH}/packages/e2e && node -e "
+const { chromium } = require('@playwright/test');
+const fs = require('fs');
+(async () => {
+  const browser = await chromium.connectOverCDP('http://127.0.0.1:9222');
+  const context = browser.contexts()[0];
+  const page = context.pages()[0] || await context.newPage();
+  try { await page.goto('https://admin.shopify.com/store/claude-9967', { timeout: 30000 }); } catch(e) {}
+  await page.waitForTimeout(3000);
+  await context.storageState({ path: '.auth/admin.json' });
+  const d = JSON.parse(fs.readFileSync('.auth/admin.json', 'utf8'));
+  console.log('✅ Session refreshed:', d.cookies?.length || 0, 'cookies');
+})().catch(e => { console.error('❌ CDP error:', e.message); process.exit(1); });
+"
+
+# 3. Copy session sang tất cả apps còn lại
+for app in order-limit cookie-bar accessibility age-verification; do
+  cp .auth/admin.json "/Users/avada/Documents/Shopify app/$app/packages/e2e/.auth/admin.json" 2>/dev/null
+done
 ```
 
 **Output cho parent**: Confirm ready hoặc blockers list
@@ -225,4 +248,18 @@ Mỗi ticket có tracker HTML riêng.
 - **Tracker state**: JSON file cạnh tracker HTML, update bởi custom reporter
 - **Playwright report**: `packages/e2e/reports/html/` — mở bằng `npx playwright show-report`
 - **Trace**: `packages/e2e/test-results/` — replay bằng `npx playwright show-trace`
-- **Auth**: `.auth/admin.json` — hết hạn 24-48h, refresh bằng scripts/export-session-from-browser.js
+- **Auth**: `.auth/admin.json` — hết hạn 24-48h, tự động refresh qua CDP (Avada Claude profile)
+
+## App Config — Pre-configured (không cần setup thêm)
+
+Tất cả 4 apps đã có `.env.test` + `.auth/admin.json` sẵn sàng:
+
+| App | Path | Handle | Domain |
+|-----|------|--------|--------|
+| OL | `order-limit/packages/e2e` | `avada-order-limit-staging` | `avada-order-limit-staging.web.app` |
+| CB | `cookie-bar/packages/e2e` | `avada-cookie-bar-staging` | `avada-cookie-bar-staging.web.app` |
+| AC | `accessibility/packages/e2e` | `ag-accessibility-staging-1` | `ag-accessibility-staging-1.firebaseapp.com` |
+| AV | `age-verification/packages/e2e` | `avada-verification-staging-1` | `age-verification-staging-1.web.app` |
+
+Store: `claude-9967.myshopify.com` | Password: `1`
+Chrome profile: `/Users/avada/.chrome-debug-profile` (Avada Claude — đã login sẵn Shopify admin)
