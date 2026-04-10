@@ -56,7 +56,7 @@ Playwright (core)              Claude Code (orchestration)
 - **Validate session**: `node packages/e2e/scripts/validate-session.js`
 - **Multi-layer tests**: `tests/admin/`, `tests/storefront/`, `tests/e2e-flows/`
 
-### Feature Document Paths
+### docs Paths
 
 | Source | Path Pattern |
 |--------|-------------|
